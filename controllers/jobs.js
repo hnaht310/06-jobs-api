@@ -7,7 +7,8 @@ const getJob = async (req, res) => {
 };
 
 const createJob = async (req, res) => {
-  res.send('Create a job');
+  // we can access to req.user because next() was called in authentication.js
+  res.send(req.user);
 };
 
 const updateJob = async (req, res) => {
