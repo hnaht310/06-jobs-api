@@ -19,7 +19,7 @@ const JobSchema = mongoose.Schema(
     },
     createdBy: {
       // every job is tied to a user
-      type: mongoose.Types.ObjectId,
+      type: mongoose.Types.ObjectId, // CHECK!!!!
       ref: 'User', // which model we are referencing => tie the job to the User model
       required: [true, 'Please provide user'],
     },

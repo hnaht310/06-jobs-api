@@ -46,15 +46,56 @@ const getAllJobs = async (req, res) => {
 };
 
 const getJob = async (req, res) => {
-  res.send('Get a job');
+  // nested destructuring
+  // console.log(req.params); // { id: '6329146bb8c7c8dcb87056d6' }
+  // console.log(req.user); //{ userId: '6328f11bc5225a9d6283c17d', name: 'anna' }
+  const {
+    params: { id: jobId },
+    user: { userId },
+  } = req;
+  const job = await Job.findOne({ _id: jobId, createdBy: userId });
+  // const job = await Job.findOne({ _id: jobId }); // this will also work but if we don't check for userId, anyone that has a jobId can access the job
+  if (!job) {
+    throw new NotFoundError(`No job with id ${jobId} `); // NotFoundError will not be thrown if the syntax for jobId is incorrect => need to handle this later. NotFoundError will be thrown when the jobId is in correct format but no job in the database matches the id
+  }
+  res.status(StatusCodes.OK).json({ job });
 };
 
 const updateJob = async (req, res) => {
-  res.send('Update a job');
+  const {
+    body: { company, position },
+    user: { userId },
+    params: { id: jobId },
+  } = req;
+  // console.log(req.body);
+  // we can skip the check if the company/position is empty because in the schema, we already set up the required validator. This is just an extra check just in case we mess up the schema validators. In general, it's faster to check for empty value in the controllers
+  if (!company || !position) {
+    throw new BadRequestError('Please provide company and position');
+  }
+  // 1st parameter (filter object): what job to update, 2nd: update argument, 3rd: options
+  // options: {new:true} => returns the document after update was applied
+  // {runValidators: true} => update validators validate the update operation against the model's schema
+  const job = await Job.findOneAndUpdate(
+    { _id: jobId, createdBy: userId },
+    req.body,
+    { new: true, runValidators: true }
+  );
+  if (!job) {
+    throw new NotFoundError(`No job with id ${jobId}`);
+  }
+  res.status(StatusCodes.OK).json({ job });
 };
 
 const deleteJob = async (req, res) => {
-  res.send('Delete a job');
+  const {
+    params: { id: jobId },
+    user: { userId },
+  } = req;
+  const job = await Job.findOneAndDelete({ _id: jobId, createdBy: userId });
+  if (!job) {
+    throw new NotFoundError(`No job with id ${jobId}`);
+  }
+  res.status(StatusCodes.OK).json(); // we only send back the 200 code
 };
 
 module.exports = { getAllJobs, getJob, createJob, updateJob, deleteJob };
