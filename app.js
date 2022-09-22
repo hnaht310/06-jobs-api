@@ -7,6 +7,11 @@ const cors = require('cors');
 const xss = require('xss-clean');
 const rateLimiter = require('express-rate-limit');
 
+// Swagger:
+const swaggerUI = require('swagger-ui-express');
+const YAML = require('yamljs');
+const swaggerDocument = YAML.load('./swagger.yaml');
+
 // helmet: set various http headers to prevent possible attacks
 // cors: ensure our API is accessible from different domain. If not installed, can only access data from same domain => make api accessible to the public
 // xss-clean: sanitize user input in the req.body, req.params, req.query to prevent malicious code injection
@@ -42,8 +47,11 @@ app.use(xss());
 
 // dummy route for testing
 app.get('/', (req, res) => {
-  res.send('jobs api');
+  res.send('<h1>Jobs API</h1><a href="/api-docs">Documentation</a>');
 });
+
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
+
 // routes
 // mount authRouter and jobRouter at specific paths
 app.use('/api/v1/auth', authRouter); // domain/api/v1/auth/register and domain/api/v1/auth/login
